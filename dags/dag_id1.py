@@ -5,7 +5,6 @@ from airflow.providers.snowflake.operators.snowflake import SnowflakeOperator
 from airflow.providers.slack.operators.slack_webhook import SlackWebhookOperator
 from datetime import timedelta, datetime
 
-
 SLACK_WEBHOOK_TOKEN = "O1w4orLYxkcrkb2Kn5lWgI31"
 
 def success_slack_alert(context):
@@ -66,8 +65,11 @@ with DAG(
     snowflake_task = SnowflakeOperator(
         task_id="run_snowflake_query",
         sql="{{ ti.xcom_pull(task_ids='generate_sql') }}",
-        snowflake_conn_id="TSMDCQB-NNC51870"
+        snowflake_conn_id="TSMDCQB-NNC51870",
+        warehouse="COMPUTE_WH",
+        database="TOPICS",
+        schema="PUBLIC",
+        role="ACCOUNTADMIN",
     )
 
     generate_sql >> snowflake_task
-
