@@ -51,7 +51,7 @@ def generate_sql_statements():
 with DAG(
     dag_id='create_snowflake_tables_every_15min',
     default_args=default_args,
-    schedule='*/15 * * * *',  # <--- aquí el cambio
+    schedule='*/15 * * * *',
     start_date=pendulum.now('UTC').subtract(days=1),
     catchup=False,
     tags=['snowflake', 'dynamic_tables'],
@@ -60,13 +60,13 @@ with DAG(
     generate_sql = PythonOperator(
         task_id='generate_sql',
         python_callable=generate_sql_statements,
+        do_xcom_push=True  # <--- importante para que el valor se pase
     )
 
-snowflake_task = SnowflakeOperator(
-    task_id="run_snowflake_query",
-    sql="SELECT CURRENT_DATE;",
-    snowflake_conn_id="TSMDCQB-NNC51870"  # Asegúrate de que sea tu conn ID válido
-)
+    snowflake_task = SnowflakeOperator(
+        task_id="run_snowflake_query",
+        sql="{{ ti.xcom_pull(task_ids='generate_sql') }}",  # <--- usa el SQL generado
+        snowflake_conn_id="TSMDCQB-NNC51870"
+    )
 
-    generate_sql >> create_dynamic_tables
-
+    generate_sql >> snowflake_task
