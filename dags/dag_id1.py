@@ -1,6 +1,7 @@
 import pendulum
 from airflow import DAG
-from airflow.providers.snowflake.operators.snowflake import SnowflakeSqlOperator
+from airflow.providers.snowflake.operators.snowflake import SnowflakeOperator
+
 import airflow.providers.snowflake
 from airflow.providers.slack.operators.slack_webhook import SlackWebhookOperator
 import os
@@ -61,11 +62,11 @@ with DAG(
         python_callable=generate_sql_statements,
     )
 
-    create_dynamic_tables = SnowflakeSqlOperator(
-        task_id='create_dynamic_tables',
-        sql="{{ ti.xcom_pull(task_ids='generate_sql') }}",
-        snowflake_conn_id='TSMDCQB-NNC51870',
-    )
+snowflake_task = SnowflakeOperator(
+    task_id="run_snowflake_query",
+    sql="SELECT CURRENT_DATE;",
+    snowflake_conn_id="TSMDCQB-NNC51870"  # Asegúrate de que sea tu conn ID válido
+)
 
     generate_sql >> create_dynamic_tables
 
