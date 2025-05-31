@@ -39,7 +39,7 @@ with DAG(
     create_dynamic_tables = SnowflakeSqlApiOperator(
         task_id='create_dynamic_tables',
         sql="{{ ti.xcom_pull(task_ids='generate_sql') }}",
-        snowflake_conn_id='snowflake_conn_id',
+        snowflake_conn_id='TSMDCQB-NNC51870',
     )
 
     generate_sql >> create_dynamic_tables
