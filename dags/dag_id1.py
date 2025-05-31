@@ -1,6 +1,7 @@
 import pendulum
 from airflow import DAG
 from airflow.providers.snowflake.operators.snowflake import SnowflakeSqlOperator
+import airflow.providers.snowflake
 
 from airflow.operators.python import PythonOperator
 from datetime import timedelta, datetime
