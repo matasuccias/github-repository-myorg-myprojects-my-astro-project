@@ -1,6 +1,7 @@
 import pendulum
 from airflow import DAG
-from airflow.providers.snowflake.operators.snowflake import SnowflakeSqlApiOperator
+from airflow.providers.snowflake.operators.snowflake import SnowflakeSqlOperator
+
 from airflow.operators.python import PythonOperator
 from datetime import timedelta, datetime
 
@@ -36,7 +37,7 @@ with DAG(
         python_callable=generate_sql_statements,
     )
 
-    create_dynamic_tables = SnowflakeSqlApiOperator(
+    create_dynamic_tables = SnowflakeSqlOperator(
         task_id='create_dynamic_tables',
         sql="{{ ti.xcom_pull(task_ids='generate_sql') }}",
         snowflake_conn_id='TSMDCQB-NNC51870',
