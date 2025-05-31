@@ -5,6 +5,8 @@ from airflow.providers.snowflake.operators.snowflake import SnowflakeOperator
 from airflow.providers.slack.operators.slack_webhook import SlackWebhookOperator
 from datetime import timedelta, datetime
 import os
+from airflow.providers.snowflake.operators.snowflake import SnowflakeQueryOperator
+
 
 
 SLACK_WEBHOOK_TOKEN = "O1w4orLYxkcrkb2Kn5lWgI31"
@@ -69,7 +71,7 @@ with DAG(
         do_xcom_push=True
     )
 
-    snowflake_task = SnowflakeOperator(
+    snowflake_task = SnowflakeQueryOperator(
         task_id="run_snowflake_query",
         sql="{{ ti.xcom_pull(task_ids='generate_sql') }}",
         snowflake_conn_id="TSMDCQB-NNC51870"
