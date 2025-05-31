@@ -60,12 +60,12 @@ with DAG(
     generate_sql = PythonOperator(
         task_id='generate_sql',
         python_callable=generate_sql_statements,
-        do_xcom_push=True  # <--- importante para que el valor se pase
+        do_xcom_push=True
     )
 
     snowflake_task = SnowflakeOperator(
         task_id="run_snowflake_query",
-        sql="{{ ti.xcom_pull(task_ids='generate_sql') }}",  # <--- usa el SQL generado
+        sql="{{ ti.xcom_pull(task_ids='generate_sql') }}",
         snowflake_conn_id="TSMDCQB-NNC51870"
     )
 
