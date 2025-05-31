@@ -1,7 +1,6 @@
 import pendulum
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from airflow.providers.snowflake.operators.snowflake import SnowflakeOperator
 from airflow.providers.slack.operators.slack_webhook import SlackWebhookOperator
 from datetime import timedelta, datetime
 import os
