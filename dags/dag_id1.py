@@ -1,15 +1,12 @@
 import pendulum
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.providers.snowflake.operators.snowflake import SnowflakeOperator
 from airflow.providers.slack.operators.slack_webhook import SlackWebhookOperator
 from datetime import timedelta, datetime
-import os
-from airflow.providers.snowflake.operators.snowflake import SnowflakeQueryOperator
-
 
 
 SLACK_WEBHOOK_TOKEN = "O1w4orLYxkcrkb2Kn5lWgI31"
-
 
 def success_slack_alert(context):
     slack_msg = f""":white_check_mark: DAG *{context['dag'].dag_id}* se ejecutó exitosamente."""
@@ -21,7 +18,6 @@ def success_slack_alert(context):
         username="airflow"
     ).execute(context=context)
 
-
 def failure_slack_alert(context):
     slack_msg = f""":x: DAG *{context['dag'].dag_id}* falló.\n*Error:* `{context.get('exception')}`"""
     return SlackWebhookOperator(
@@ -32,7 +28,6 @@ def failure_slack_alert(context):
         username="airflow"
     ).execute(context=context)
 
-
 default_args = {
     'owner': 'airflow',
     'retries': 1,
@@ -40,7 +35,6 @@ default_args = {
     "on_success_callback": success_slack_alert,
     "on_failure_callback": failure_slack_alert
 }
-
 
 def generate_sql_statements():
     suffix = datetime.now().strftime('%Y%m%d_%H%M')
@@ -53,7 +47,6 @@ def generate_sql_statements():
         sql_statements.append(sql)
 
     return " ".join(sql_statements)
-
 
 with DAG(
     dag_id='create_snowflake_tables_every_15min',
@@ -70,7 +63,7 @@ with DAG(
         do_xcom_push=True
     )
 
-    snowflake_task = SnowflakeQueryOperator(
+    snowflake_task = SnowflakeOperator(
         task_id="run_snowflake_query",
         sql="{{ ti.xcom_pull(task_ids='generate_sql') }}",
         snowflake_conn_id="TSMDCQB-NNC51870"
