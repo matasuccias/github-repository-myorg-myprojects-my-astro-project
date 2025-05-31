@@ -2,7 +2,8 @@ import pendulum
 from airflow import DAG
 from airflow.providers.snowflake.operators.snowflake import SnowflakeSqlOperator
 import airflow.providers.snowflake
-
+from airflow.providers.slack.operators.slack_webhook import SlackWebhookOperator
+import os
 from airflow.operators.python import PythonOperator
 from datetime import timedelta, datetime
 
@@ -10,8 +11,30 @@ default_args = {
     'owner': 'airflow',
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
+    "on_success_callback": success_slack_alert,
+    "on_failure_callback": failure_slack_alert
 }
+def success_slack_alert(context):
+    slack_msg = f""":white_check_mark: DAG *{context['dag'].dag_id}* se ejecutó exitosamente."""
+    return SlackWebhookOperator(
+        task_id="slack_success_notification",
+        http_conn_id=None,
+        webhook_token=os.environ.get("https://hooks.slack.com/services/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"),
+        message=slack_msg,
+        username="airflow"
+    ).execute(context=context)
 
+# Función para enviar notificación a Slack en caso de error
+def failure_slack_alert(context):
+    slack_msg = f""":x: DAG *{context['dag'].dag_id}* falló.
+*Error:* `{context.get('exception')}`"""
+    return SlackWebhookOperator(
+        task_id="slack_failure_notification",
+        http_conn_id=None,
+        webhook_token=os.environ.get("https://hooks.slack.com/services/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"),
+        message=slack_msg,
+        username="airflow"
+    ).execute(context=context)
 def generate_sql_statements():
     suffix = datetime.now().strftime('%Y%m%d_%H%M')
     tables = ['EVENTS', 'GROUP_TOPICS', 'GROUPS', 'MEMBERS_TOPICS', 'TOPICS', 'VENUES']
